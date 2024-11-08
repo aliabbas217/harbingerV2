@@ -1,0 +1,26 @@
+{
+  "name": "harbinger",
+  "version": "1.0.0",
+  "description": "This is the real time chat application, an auxiliary project of the Horizon project.",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "express": "^4.18.2",
+    "express-rate-limit": "^6.7.0",
+    "jsonwebtoken": "^9.0.0",
+    "mongoose": "^7.2.2",
+    "redis": "^4.6.7",
+    "socket.io": "^4.7.1",
+    "socket.io-redis": "^6.1.0",
+    "validator": "^13.9.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "author": "Ali Abbas Baig",
+  "license": "ISC"
+}
