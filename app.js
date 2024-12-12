@@ -4,9 +4,7 @@ const socketIo = require('socket.io');
 const mongoose = require('mongoose');
 const redis = require('redis');
 const { createAdapter } = require('socket.io-redis');
-const jwt = require('jsonwebtoken');
 
-const authRoutes = require('./routes/auth');
 const chatRoutes = require('./routes/chats');
 const userRoutes = require('./routes/users');
 const Chat = require('./models/chat');
@@ -32,22 +30,9 @@ mongoose.connect(process.env.MONGO_URI).then(() => {
 });
 
 // Routes
-app.use('/auth', authRoutes);
 app.use('/chats', chatRoutes);
 app.use('/users', userRoutes);
 
-// Socket.io JWT Authentication
-io.use((socket, next) => {
-    const token = socket.handshake.auth.token;
-    if (!token) {
-        return next(new Error('Authentication error'));
-    }
-    jwt.verify(token, process.env.JWT_SECRET || 'defaultsecret', (err, user) => {
-        if (err) return next(new Error('Authentication error'));
-        socket.user = user;
-        next();
-    });
-});
 
 // Socket.io events
 io.on('connection', (socket) => {
