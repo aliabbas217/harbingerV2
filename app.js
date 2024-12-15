@@ -2,64 +2,50 @@ const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const mongoose = require('mongoose');
-const redis = require('redis');
-const { createAdapter } = require('socket.io-redis');
-
-const chatRoutes = require('./routes/chats');
-const userRoutes = require('./routes/users');
-const Chat = require('./models/chatModel');
+const cors = require('cors')
 
 const app = express();
-const server = http.createServer(app);
-const io = socketIo(server);
+const httpServer = http.createServer(app);
+const io = socketIo(httpServer);
 
-module.exports.io = io;
+const onlineUsers = {};
+
+module.exports.onlineUsers = onlineUsers;
+module.exports.io = io; //it will be used in ./sockets for better modularity and to keep the code clean
 
 app.use(express.json());
-app.use(express.static('public'));
-
-mongoose.connect(process.env.MONGO_URI).then(() => {
-    console.log('Connected to MongoDB');
-}).catch((err) => {
-    console.log('Error connecting to MongoDB');
+app.use(express.static('public')); // no reason to use this pr acha lag rha tha
+app.use(cors()); // cors da te pta a tenu comment q add kr rya a
+app.get('/health', (req, res) => {
+    res.status(200).send('Server is healthy');
 });
 
-// Routes
-app.use('/chats', chatRoutes);
-app.use('/users', userRoutes);
+mongoose.connect(process.env.MONGO_URI).then(
+    ()=>{
+        console.log(`Connected to MongoDB-${process.env.ENVIRONMENT}`);
+    }
+).catch(
+    (error)=>{
+        console.log('Error Connecting to MongoDB:', error);
+    }
+);
 
+const port = process.env.PORT || 3000;
+httpServer.listen(port, ()=>{
+    console.log(`Server is running on port ${port}`);
+});
 
-// Socket.io events
-io.on('connection', (socket) => {
-    console.log('New user connected');
-
-    socket.on('chatMessage', async (msg) => {
-        const { from, to, text } = msg;
-
-        let chat = await Chat.findOne({ participants: { $all: [from, to] } });
-
-        if (!chat) {
-            chat = new Chat({ participants: [from, to] });
-            await chat.save();
-        }
-
-        const message = { from, to, text, timestamp: Date.now() };
-
-        const recipientSocket = io.sockets.sockets.get(to);
-        if (recipientSocket) {
-            io.to(recipientSocket.id).emit('chatMessage', message);
-        } 
-
-        chat.messages.push(message);
-        await chat.save();
+const shutDown = () => {
+    console.log('\nShutting down server...');
+    mongoose.connection.close().then(()=>{
+        console.log("Connection with MongoDB closed")
+    }).catch((error)=>{console.log(`Error occoured while closing connection with Mongo:${error}`)});
+    httpServer.close(()=>{
+        console.log('Server dumped')
     });
+};
 
-    socket.on('disconnect', () => {
-        console.log('User disconnected');
-    });
-});
+process.on('SIGINT', shutDown);
+process.on('SIGTERM', shutDown);
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+require('./sockets');
