@@ -1,5 +1,5 @@
-const Chat = require('../models/chat');
-const User = require('../models/user');
+const Chat = require('../models/chatModel');
+const User = require('../models/userModel');
 const io = require('../app').io;  // Import socket instance
 
 // Fetch previous chats for a user

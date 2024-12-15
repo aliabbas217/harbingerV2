@@ -7,16 +7,11 @@ const { createAdapter } = require('socket.io-redis');
 
 const chatRoutes = require('./routes/chats');
 const userRoutes = require('./routes/users');
-const Chat = require('./models/chat');
+const Chat = require('./models/chatModel');
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
-
-// Redis connection
-const redisClient = redis.createClient();
-const redisPublisher = redisClient.duplicate();
-io.adapter(createAdapter(redisClient, redisPublisher));
 
 module.exports.io = io;
 
