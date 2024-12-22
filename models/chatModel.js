@@ -1,14 +1,8 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 const ChatSchema = new mongoose.Schema({
-    participants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }],
-    lastMessage: { type: mongoose.Schema.Types.ObjectId, ref: 'Message' },
-    lastUpdated: { type: Date, default: Date.now },
-    topics: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Topic' }],
-    typingIndication: {
-        type: Boolean,
-        default: false
-    },
+  participants: [{ type: String, required: true }],
+  topics: [{ type: mongoose.Schema.Types.ObjectId, ref: "Topic" }],
 });
 
-module.exports.Chat = mongoose.model('Chat', ChatSchema);
+export const Chat = mongoose.model("Chat", ChatSchema);

@@ -1,25 +1,46 @@
-const { consumer } = require('./kafka');
+const { consumer } = require("./kafka");
 
-const consumeMessages = async (topicName, onMessage) => {
-    try {
-        // Subscribe to the topic
-        await consumer.subscribe({ topic: topicName, fromBeginning: true });
+const fetchMessagesOnce = async (topicName) => {
+  try {
+    await consumer.subscribe({ topic: topicName, fromBeginning: false });
 
-        // Listen for new messages
-        await consumer.run({
-            eachMessage: async ({ topic, partition, message }) => {
-                const value = message.value.toString();
-                console.log(`Received message from topic "${topic}":`, value);
-                if (onMessage) {
-                    onMessage(JSON.parse(value)); // Pass the parsed message to the callback
-                }
-            },
-        });
+    const messages = [];
+    let processingDone = false;
 
-        console.log(`Consumer listening to topic "${topicName}"`);
-    } catch (error) {
-        console.error('Error consuming messages:', error);
-    }
+    const processPromise = new Promise((resolve, reject) => {
+      consumer
+        .run({
+          eachMessage: async ({ topic, partition, message }) => {
+            messages.push({
+              topic,
+              partition,
+              value: JSON.parse(message.value.toString()),
+              key: message.key?.toString(),
+              offset: message.offset,
+              timestamp: message.timestamp,
+            });
+
+            if (messages.length >= 100) {
+              processingDone = true;
+            }
+          },
+        })
+        .then(resolve)
+        .catch(reject);
+    });
+
+    await processPromise;
+
+    await consumer.disconnect();
+
+    console.log(
+      `Fetched ${messages.length} messages from topic "${topicName}"`
+    );
+    return messages;
+  } catch (error) {
+    console.error("Error fetching messages:", error);
+    return [];
+  }
 };
 
-module.exports = { consumeMessages };
+module.exports = { fetchMessagesOnce };

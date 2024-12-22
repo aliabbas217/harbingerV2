@@ -1,51 +1,32 @@
-const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
-const mongoose = require('mongoose');
-const cors = require('cors')
+import express from "express";
+import http from "http";
+import { Server } from "socket.io";
+import cors from "cors";
+import sockets from "./sockets/sockets.js";
+
+import { chatsRouter } from "./routes/chatsRoute.js";
+import { topicsRouter } from "./routes/topicsRoute.js";
+import { messagesRouter } from "./routes/messagesRoute.js";
+import { userRouter } from "./routes/userRoute.js";
+import { allRouter } from "./routes/allRoute.js";
 
 const app = express();
-const httpServer = http.createServer(app);
-const io = socketIo(httpServer);
-
-const onlineUsers = {};
-
-module.exports.onlineUsers = onlineUsers;
-module.exports.io = io; //it will be used in ./sockets for better modularity and to keep the code clean
+export const httpServer = http.createServer(app);
+const io = new Server(httpServer);
 
 app.use(express.json());
-app.use(express.static('public')); // no reason to use this pr acha lag rha tha
-app.use(cors()); // cors da te pta a tenu comment q add kr rya a
-app.get('/health', (req, res) => {
-    res.status(200).send('Server is healthy');
+app.use(express.static("public"));
+app.use(cors());
+
+const api = "/harbinger/api/v1";
+app.use(`${api}/chat`, chatsRouter);
+app.use(`${api}/topic`, topicsRouter);
+app.use(`${api}/message`, messagesRouter);
+app.use(`${api}/user`, userRouter);
+app.use(`${api}/all`, allRouter);
+app.get("/health", (req, res) => {
+  res.status(200).json({ res: "Server is healthy" });
 });
 
-mongoose.connect(process.env.MONGO_URI).then(
-    ()=>{
-        console.log(`Connected to MongoDB-${process.env.ENVIRONMENT}`);
-    }
-).catch(
-    (error)=>{
-        console.log('Error Connecting to MongoDB:', error);
-    }
-);
-
-const port = process.env.PORT || 3000;
-httpServer.listen(port, ()=>{
-    console.log(`Server is running on port ${port}`);
-});
-
-const shutDown = () => {
-    console.log('\nShutting down server...');
-    mongoose.connection.close().then(()=>{
-        console.log("Connection with MongoDB closed")
-    }).catch((error)=>{console.log(`Error occoured while closing connection with Mongo:${error}`)});
-    httpServer.close(()=>{
-        console.log('Server dumped')
-    });
-};
-
-process.on('SIGINT', shutDown);
-process.on('SIGTERM', shutDown);
-
-require('./sockets');
+export const onlineUsers = {};
+sockets(io, onlineUsers);

@@ -1,11 +1,13 @@
-const mongoose = require('mongoose');
-
+import mongoose from "mongoose";
 const TopicSchema = new mongoose.Schema({
-    chat: { type: mongoose.Schema.Types.ObjectId, ref: 'Chat', required: true },
-    topicName: { type: String, required: true },
-    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    dateCreated: { type: Date, default: Date.now },
-    messages: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Message' }],
+  topicName: { type: String, required: true, default: "General" },
+  createdBy: {
+    type: String,
+    required: true,
+  },
+  visibelTo: [{ tyepe: String }],
+  dateCreated: { type: Date, default: Date.now },
+  messages: [{ type: mongoose.Schema.Types.ObjectId, ref: "Message" }],
 });
 
-module.exports.Topic = mongoose.model('Topic', TopicSchema);
+export const Topic = mongoose.model("Topic", TopicSchema);

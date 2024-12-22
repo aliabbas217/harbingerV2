@@ -1,49 +1,76 @@
-const { Message } = require('../models/Message');
+import { Message } from "../models/messageModel.js";
+import { Topic } from "../models/topicModel.js";
 
-module.exports.createMessage = async (req, res) => {
-    try {
-        const { chatId, topicId, sender, text, media } = req.body;
-        const newMessage = new Message({ chat: chatId, topic: topicId, sender, text, media });
-        await newMessage.save();
-        res.status(201).json(newMessage);
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
+export const createMessage = async (messageData) => {
+  try {
+    const newMessage = new Message(messageData);
+    const data = await newMessage.save();
+    console.log(data);
+    return { success: true, data: data };
+  } catch (error) {
+    return { success: false, data: error.message };
+  }
 };
 
-module.exports.getMessageById = async (req, res) => {
-    try {
-        const message = await Message.findById(req.params.messageId)
-            .populate('sender')
-            .populate('chat')
-            .populate('topic');
-        if (!message) return res.status(404).json({ message: 'Message not found' });
-        res.json(message);
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
+export const getMessages = async (filter) => {
+  try {
+    const messages = await Message.find(filter);
+    return { success: true, data: messages };
+  } catch (error) {
+    return { success: false, data: error.message };
+  }
 };
 
-module.exports.updateMessage = async (req, res) => {
-    try {
-        const updatedMessage = await Message.findByIdAndUpdate(
-            req.params.messageId,
-            req.body,
-            { new: true }
-        );
-        if (!updatedMessage) return res.status(404).json({ message: 'Message not found' });
-        res.json(updatedMessage);
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
+export const getMessageById = async (id) => {
+  try {
+    const message = await Message.findById(id);
+    if (!message) return { success: false, data: "Message not found" };
+    return { success: true, message };
+  } catch (error) {
+    return { success: false, data: error.message };
+  }
 };
 
-module.exports.deleteMessage = async (req, res) => {
-    try {
-        const deletedMessage = await Message.findByIdAndDelete(req.params.messageId);
-        if (!deletedMessage) return res.status(404).json({ message: 'Message not found' });
-        res.json({ message: 'Message deleted successfully' });
-    } catch (error)        {
-        res.status(400).json({ error: error.message });
+export const updateMessageById = async (id, updateData) => {
+  try {
+    const updatedMessage = await Message.findByIdAndUpdate(id, updateData, {
+      new: true,
+    });
+    if (!updatedMessage) return { success: false, data: "Message not found" };
+    return { success: true, data: updatedMessage };
+  } catch (error) {
+    return { success: false, data: error.message };
+  }
+};
+
+export const deleteMessageById = async (id) => {
+  try {
+    const deletedMessage = await Message.findByIdAndDelete(id);
+    if (!deletedMessage) return { success: false, data: "Message not found" };
+    return { success: true, data: "Message deleted successfully" };
+  } catch (error) {
+    return { success: false, data: error.message };
+  }
+};
+
+export const getMessagesBeforeTimestamp = async (
+  topicID,
+  timestamp = Date.now(),
+  limit = 50
+) => {
+  try {
+    const topic = await Topic.findById(topicID);
+    if (!topic) {
+      return { success: false, data: "Topic not found" };
     }
+    const messages = await Message.find({
+      _id: { $in: topic.messages },
+      timestamp: { $lt: timestamp },
+    })
+      .sort({ timestamp: -1 })
+      .limit(limit);
+    return { success: true, data: messages };
+  } catch (error) {
+    return { success: false, data: error.message };
+  }
 };

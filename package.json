@@ -2,10 +2,11 @@
   "name": "harbinger",
   "version": "1.0.0",
   "description": "This is the real time chat application, an auxiliary project of the Horizon project.",
-  "main": "app.js",
+  "type": "module",
+  "main": "server.js",
   "scripts": {
-    "start": "node app.js",
-    "dev": "nodemon app.js"
+    "start": "node --env-file=.env server.js",
+    "dev": "nodemon --env-file=.env server.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -14,7 +15,6 @@
     "jsonwebtoken": "^9.0.0",
     "kafkajs": "^2.2.4",
     "mongoose": "^7.2.2",
-    "redis": "^4.6.7",
     "socket.io": "^4.7.1",
     "socket.io-redis": "^6.1.0",
     "validator": "^13.9.0"
