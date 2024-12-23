@@ -1,46 +1,38 @@
-const { consumer } = require("./kafka");
+import { Kafka } from "kafkajs";
 
-const fetchMessagesOnce = async (topicName) => {
+const kafka = new Kafka({
+  clientId: "horizon",
+  brokers: ["localhost:9092"],
+});
+
+const consumer = kafka.consumer({ groupId: "harbinger" });
+
+export const disconnectConsumer = async () => {
   try {
-    await consumer.subscribe({ topic: topicName, fromBeginning: false });
-
-    const messages = [];
-    let processingDone = false;
-
-    const processPromise = new Promise((resolve, reject) => {
-      consumer
-        .run({
-          eachMessage: async ({ topic, partition, message }) => {
-            messages.push({
-              topic,
-              partition,
-              value: JSON.parse(message.value.toString()),
-              key: message.key?.toString(),
-              offset: message.offset,
-              timestamp: message.timestamp,
-            });
-
-            if (messages.length >= 100) {
-              processingDone = true;
-            }
-          },
-        })
-        .then(resolve)
-        .catch(reject);
-    });
-
-    await processPromise;
-
     await consumer.disconnect();
-
-    console.log(
-      `Fetched ${messages.length} messages from topic "${topicName}"`
-    );
-    return messages;
+    console.log("Consumer Disconnected");
   } catch (error) {
-    console.error("Error fetching messages:", error);
-    return [];
+    console.error(error);
   }
 };
 
-module.exports = { fetchMessagesOnce };
+export const startConsumer = async (topicName) => {
+  try {
+    await consumer.connect();
+    console.log("Kafka Consumer connected");
+
+    await consumer.subscribe({ topic: topicName, fromBeginning: true });
+    console.log("Subscribed to topic: topicName");
+
+    await consumer.run({
+      eachMessage: async ({ topic, partition, message }) => {
+        const msgValue = message.value.toString();
+        console.log(`Received message: ${msgValue}`);
+
+        // Process the message here
+      },
+    });
+  } catch (err) {
+    console.error("Error starting Kafka Consumer:", err);
+  }
+};
