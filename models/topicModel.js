@@ -5,7 +5,7 @@ const TopicSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  visibelTo: [{ tyepe: String }],
+  visibleTo: [{ type: String }],
   dateCreated: { type: Date, default: Date.now },
   messages: [{ type: mongoose.Schema.Types.ObjectId, ref: "Message" }],
 });

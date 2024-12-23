@@ -1,10 +1,15 @@
 import express from "express";
+import {
+  createChatByUserID,
+  getAllChatsByUserID,
+  deleteAllChatsByUserID,
+  deleteChatByUserID,
+} from "../dbCrud/chatCRUD.js";
 
 export const chatsRouter = express.Router();
-chatsRouter.route("/").post();
 chatsRouter
-  .route("/:senderID") //get all the chats of a user
-  .get()
-  .post();
-chatsRouter.route("/:senderEmail/:chatID").delete();
-chatsRouter.route("/:chatID").delete();
+  .route("/user/:userID")
+  .get(getAllChatsByUserID)
+  .post(createChatByUserID)
+  .delete(deleteAllChatsByUserID);
+chatsRouter.route("/:chatID/user/:userID").delete(deleteChatByUserID);
