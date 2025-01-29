@@ -1,9 +1,6 @@
 import mongoose from "mongoose";
 import { httpServer } from "./app.js";
 
-import { startConsumer, disconnectConsumer } from "./kafka/consumer.js";
-import { startProducer, disconnectProducer } from "./kafka/producer.js";
-
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
@@ -30,8 +27,6 @@ const shutDown = async () => {
         `Error occoured while closing connection with Mongo:${error}`
       );
     });
-  await disconnectProducer();
-  await disconnectConsumer();
   httpServer.close(() => {
     console.log("Server dumped");
   });

@@ -24,7 +24,7 @@ app.use(`${api}/topic`, topicsRouter);
 app.use(`${api}/message`, messagesRouter);
 app.use(`${api}/user`, userRouter);
 app.use(`${api}/all`, allRouter);
-app.get("/health", (req, res) => {
+app.get(`${api}/health`, (req, res) => {
   res.status(200).json({ res: "Server is healthy" });
 });
 
