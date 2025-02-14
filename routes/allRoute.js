@@ -1,10 +1,16 @@
 import express from "express";
-import { getAllUsers, deleteAllUsers } from "../dbCrud/userCRUD.js";
+import {
+  getAllUsers,
+  getAllEmail,
+  deleteAllUsers,
+} from "../dbCrud/userCRUD.js";
 import { getAllChats, deleteAllChats } from "../dbCrud/chatCRUD.js";
 import { getAllTopics, deleteAllTopics } from "../dbCrud/topicCRUD.js";
 import { getAllMessages, deleteAllMessages } from "../dbCrud/messageCRUD.js";
 export const allRouter = express.Router();
 allRouter.route("/users").get(getAllUsers).delete(deleteAllUsers);
+
+allRouter.route("/users/emails").get(getAllEmail);
 
 allRouter.route("/chats").get(getAllChats).delete(deleteAllChats);
 

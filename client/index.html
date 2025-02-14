@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Socket.IO Chat</title>
+    <style>
+      body {
+        margin: 0;
+        padding-bottom: 6rem;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+      }
+
+      #form {
+        background: rgba(0, 0, 0, 0.15);
+        padding: 0.5rem;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+        backdrop-filter: blur(10px);
+      }
+      #form input,
+      #form button {
+        margin: 0.25rem;
+        padding: 0.5rem;
+        border-radius: 5px;
+        border: none;
+      }
+      #form input {
+        flex-grow: 1;
+      }
+      #form button {
+        background: #333;
+        color: #fff;
+        cursor: pointer;
+      }
+
+      #messages {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+      }
+      #messages > li {
+        padding: 0.5rem 1rem;
+        border-bottom: 1px solid #ddd;
+      }
+      #messages > li:nth-child(odd) {
+        background: #efefef;
+      }
+
+      .message-container {
+        display: flex;
+        flex-direction: column;
+      }
+      .message-header {
+        font-size: 0.85rem;
+        color: #666;
+      }
+      .message-text {
+        font-size: 1rem;
+        font-weight: bold;
+      }
+      .response-container {
+        margin-left: 2rem;
+        padding: 0.25rem 1rem;
+        background: #f5f5f5;
+        border-left: 3px solid #aaa;
+      }
+    </style>
+  </head>
+  <body>
+    <ul id="messages"></ul>
+    <form id="form" action="">
+      <input id="sender" placeholder="Sender" autocomplete="off" />
+      <input id="receiver" placeholder="Receiver" autocomplete="off" />
+      <input id="topic" placeholder="Topic" autocomplete="off" />
+      <input id="message" placeholder="Type a message..." autocomplete="off" />
+      <input
+        id="responseTo"
+        placeholder="Response to (Message ID)"
+        autocomplete="off"
+      />
+      <button type="submit">Send</button>
+    </form>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+      const form = document.getElementById("form");
+      const messages = document.getElementById("messages");
+      const senderInput = document.getElementById("sender");
+      const receiverInput = document.getElementById("receiver");
+      const topicInput = document.getElementById("topic");
+      const messageInput = document.getElementById("message");
+      const responseToInput = document.getElementById("responseTo");
+
+      let messageIdCounter = 1; // Simulating unique message IDs
+
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+        if (
+          senderInput.value &&
+          receiverInput.value &&
+          topicInput.value &&
+          messageInput.value
+        ) {
+          const messageData = {
+            id: messageIdCounter++, // Assign unique ID
+            sender: senderInput.value,
+            receiver: receiverInput.value,
+            topic: topicInput.value,
+            message: messageInput.value,
+            responseTo: responseToInput.value || null, // If replying, store message ID
+          };
+          socket.emit("chat message", messageData);
+          messageInput.value = "";
+          responseToInput.value = ""; // Clear response field
+        }
+      });
+
+      socket.on("chat message", function (data) {
+        let item = document.createElement("li");
+        item.innerHTML = `
+                <div class="message-container">
+                    <div class="message-header">
+                        <strong>${data.sender}</strong> to <strong>${data.receiver}</strong> | Topic: <em>${data.topic}</em> | <small>ID: ${data.id}</small>
+                    </div>
+                    <div class="message-text">${data.message}</div>
+                </div>`;
+
+        if (data.responseTo) {
+          let parentMessage = document.querySelector(
+            `[data-id="${data.responseTo}"]`
+          );
+          if (parentMessage) {
+            let responseContainer = document.createElement("div");
+            responseContainer.classList.add("response-container");
+            responseContainer.innerHTML = `<strong>Reply:</strong> ${data.message}`;
+            parentMessage.appendChild(responseContainer);
+            return;
+          }
+        }
+
+        item.setAttribute("data-id", data.id);
+        messages.appendChild(item);
+        window.scrollTo(0, document.body.scrollHeight);
+      });
+    </script>
+  </body>
+</html>

@@ -75,6 +75,19 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
+export const getAllEmail = async (req, res) => {
+  try {
+    const userEmails = await User.find({}, "email");
+    if (userEmails.length === 0) {
+      return res.status(404).json({ success: false, error: "No Users found" });
+    }
+    return res.status(200).json({ success: true, data: userEmails });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
 export const deleteUserByEmail = async (req, res) => {
   try {
     const email = req.params.email;
