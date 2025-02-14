@@ -1,14 +1,14 @@
 import express from "express";
 import {
-  getUserByEmail,
-  createUserByEmail,
-  deleteUserByEmail,
+  getUserByUsername,
+  createUserByUsername,
+  deleteUserByUsername,
 } from "../dbCrud/userCRUD.js";
 
 export const userRouter = express.Router();
 
 userRouter
-  .route("/:email")
-  .get(getUserByEmail)
-  .post(createUserByEmail)
-  .delete(deleteUserByEmail);
+  .route("/:username")
+  .get(getUserByUsername)
+  .post(createUserByUsername)
+  .delete(deleteUserByUsername);

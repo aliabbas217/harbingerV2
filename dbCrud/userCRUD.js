@@ -2,38 +2,33 @@ import { User } from "../models/userModel.js";
 import { Chat } from "../models/chatModel.js";
 import { Topic } from "../models/topicModel.js";
 import { Message } from "../models/messageModel.js";
-export const createUserByEmail = async (req, res) => {
+export const createUserByUsername = async (req, res) => {
   try {
-    const email = req.params.email;
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return res
-        .status(400)
-        .json({ success: false, error: "Invalid email format" });
-    }
-    const existingUser = await User.findOne({ email });
+    const username = req.params.username;
+    const existingUser = await User.findOne({ username });
     if (existingUser) {
       return res
         .status(409)
         .json({ success: false, error: "User already exists" });
     }
     const message = new Message({
-      sender: email,
+      sender: username,
       text: "Hello, Welcome to Harbinger.",
     });
     await message.save();
     const topic = new Topic({
-      createdBy: email,
-      visibleTo: [email],
+      createdBy: username,
+      visibleTo: [username],
       messages: [message._id],
     });
     await topic.save();
     const chat = new Chat({
-      participants: [email],
+      participants: [username],
       topics: [topic._id],
     });
     await chat.save();
     const newUser = new User({
-      email,
+      username,
       chats: [chat._id],
     });
     await newUser.save();
@@ -44,10 +39,10 @@ export const createUserByEmail = async (req, res) => {
   }
 };
 
-export const getUserByEmail = async (req, res) => {
+export const getUserByUsername = async (req, res) => {
   try {
-    const email = req.params.email;
-    const user = await User.findOne({ email });
+    const username = req.params.username;
+    const user = await User.findOne({ username });
     if (!user) {
       return res
         .status(404)
@@ -75,23 +70,23 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
-export const getAllEmail = async (req, res) => {
+export const getAllUsername = async (req, res) => {
   try {
-    const userEmails = await User.find({}, "email");
-    if (userEmails.length === 0) {
+    const userNames = await User.find({}, "username");
+    if (userNames.length === 0) {
       return res.status(404).json({ success: false, error: "No Users found" });
     }
-    return res.status(200).json({ success: true, data: userEmails });
+    return res.status(200).json({ success: true, data: userNames });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, error: error.message });
   }
 };
 
-export const deleteUserByEmail = async (req, res) => {
+export const deleteUserByUsername = async (req, res) => {
   try {
-    const email = req.params.email;
-    const user = await User.findOne({ email });
+    const username = req.params.username;
+    const user = await User.findOne({ username });
     if (!user) {
       return res
         .status(404)
