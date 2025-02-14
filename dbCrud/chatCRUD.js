@@ -3,17 +3,17 @@ import { Chat } from "../models/chatModel.js";
 import { Topic } from "../models/topicModel.js";
 import { Message } from "../models/messageModel.js";
 
-export const createChatByUserID = async (req, res) => {
+export const createChatByUsername = async (req, res) => {
   try {
-    const senderID = req.params.userID;
-    const receiverEmail = req.body.receiver;
-    const sender = await User.findById(senderID);
+    const senderUsername = req.params.username;
+    const receiverUsername = req.body.receiverUsername;
+    const sender = await User.findById(username);
     if (!sender) {
       return res
         .status(404)
         .json({ success: false, error: "Sender Not Found" });
     }
-    const receiver = await User.findOne({ email: receiverEmail });
+    const receiver = await User.findOne({ username: receiverUsername });
     if (!receiver) {
       return res
         .status(404)
@@ -21,18 +21,18 @@ export const createChatByUserID = async (req, res) => {
     }
 
     const message = new Message({
-      sender: sender.email,
+      sender: sender.username,
       text: "Hello, Welcome to Harbinger.",
     });
     await message.save();
     const topic = new Topic({
-      createdBy: sender.email,
-      visibleTo: [sender.email, receiverEmail],
+      createdBy: sender.username,
+      visibleTo: [sender.username, receiverUsername],
       messages: [message._id],
     });
     await topic.save();
     const chat = new Chat({
-      participants: [sender.email, receiverEmail],
+      participants: [sender.username, receiverUsername],
       topics: [topic._id],
     });
     await chat.save();
@@ -47,10 +47,10 @@ export const createChatByUserID = async (req, res) => {
   }
 };
 
-export const getAllChatsByUserID = async (req, res) => {
+export const getAllChatsByUsername = async (req, res) => {
   try {
-    const { userID } = req.params;
-    const user = await User.findById(userID).populate("chats");
+    const { username } = req.params;
+    const user = await User.findById(username).populate("chats");
 
     if (!user) {
       return res.status(404).json({ success: false, error: "User not found." });
@@ -80,10 +80,10 @@ export const getAllChats = async (req, res) => {
   }
 };
 
-export const deleteAllChatsByUserID = async (req, res) => {
+export const deleteAllChatsByUsername = async (req, res) => {
   try {
-    const { userID } = req.params;
-    const user = await User.findById(userID);
+    const { username } = req.params;
+    const user = await User.findById(username);
     if (!user) {
       return res.status(404).json({ success: false, error: "User not found." });
     }
@@ -93,7 +93,7 @@ export const deleteAllChatsByUserID = async (req, res) => {
         const updatedChat = await Chat.findByIdAndUpdate(
           chatID,
           {
-            $pull: { participants: user.email },
+            $pull: { participants: user.username },
           },
           {
             new: true,
@@ -115,11 +115,11 @@ export const deleteAllChatsByUserID = async (req, res) => {
   }
 };
 
-export const deleteChatByUserID = async (req, res) => {
+export const deleteChatByUsername = async (req, res) => {
   try {
-    const senderID = req.params.userID;
+    const username = req.params.username;
     const chatID = req.params.chatID;
-    const user = await User.findById(senderID);
+    const user = await User.findById(username);
     if (!user) {
       return res
         .status(404)
@@ -132,7 +132,7 @@ export const deleteChatByUserID = async (req, res) => {
     const updatedChat = await Chat.findByIdAndUpdate(
       chatID,
       {
-        $pull: { participants: user.email },
+        $pull: { participants: user.username },
       },
       { new: true }
     );

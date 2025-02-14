@@ -98,7 +98,7 @@
       const messageInput = document.getElementById("message");
       const responseToInput = document.getElementById("responseTo");
 
-      let messageIdCounter = 1; // Simulating unique message IDs
+      let messageIdCounter = 1;
 
       form.addEventListener("submit", function (event) {
         event.preventDefault();
@@ -109,7 +109,7 @@
           messageInput.value
         ) {
           const messageData = {
-            id: messageIdCounter++, // Assign unique ID
+            id: messageIdCounter++,
             sender: senderInput.value,
             receiver: receiverInput.value,
             topic: topicInput.value,

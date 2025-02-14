@@ -28,8 +28,6 @@ export const startConsumer = async (topicName) => {
       eachMessage: async ({ topic, partition, message }) => {
         const msgValue = message.value.toString();
         console.log(`Received message: ${msgValue}`);
-
-        // Process the message here
       },
     });
   } catch (err) {

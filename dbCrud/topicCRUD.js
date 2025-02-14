@@ -134,12 +134,12 @@ export const deleteTopicByTopicID = async (req, res) => {
   }
 };
 
-export const deleteTopicByUserEmail = async (req, res) => {
+export const deleteTopicByUsername = async (req, res) => {
   try {
-    const email = req.params.email;
+    const username = req.params.username;
     const topicID = req.params.topicID;
     const topic = await Topic.findById(topicID);
-    const userIndex = topic.visibleTo.indexOf(email);
+    const userIndex = topic.visibleTo.indexOf(username);
     if (userIndex === -1) {
       return res
         .status(404)

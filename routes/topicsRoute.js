@@ -4,7 +4,7 @@ import {
   getTopicsByChatID,
   deleteTopicByTopicID,
   deleteTopicsByChatID,
-  deleteTopicByUserEmail,
+  deleteTopicByUsername,
   createTopicByChatID,
   updateTopicByTopicID,
 } from "../dbCrud/topicCRUD.js";
@@ -17,4 +17,4 @@ topicsRouter
   .post(createTopicByChatID)
   .delete(deleteTopicsByChatID);
 topicsRouter.route("/:topicID/chat/:chatID").delete(deleteTopicByTopicID);
-topicsRouter.route("/:topicID/user/:email").delete(deleteTopicByUserEmail);
+topicsRouter.route("/:topicID/user/:username").delete(deleteTopicByUsername);
