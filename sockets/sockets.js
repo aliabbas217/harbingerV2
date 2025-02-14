@@ -1,4 +1,4 @@
-import MessageModel from "./models/MessageModel.js"; // Import your database model
+import { Message } from "../models/messageModel.js";
 
 export default function sockets(io, onlineUsers) {
   io.on("connect", (socket) => {
@@ -14,20 +14,14 @@ export default function sockets(io, onlineUsers) {
     socket.on("new_message", async (message) => {
       console.log("New message received:", message);
 
-      const { sender, text } = message;
-
       try {
-        await MessageModel.create({
-          sender: sender,
-          text: text,
-          timestamp: new Date(),
-        });
+        await Message.create(message);
         console.log("Message saved to DB");
       } catch (err) {
         console.error("Error saving message:", err);
       }
 
-      const senderSocketId = onlineUsers[sender];
+      const senderSocketId = onlineUsers[message.sender];
       if (senderSocketId) {
         io.to(senderSocketId).emit("new_message", message);
       }
