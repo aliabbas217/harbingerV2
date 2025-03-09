@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/horizon"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("HORIZON_DB_URI")
+}
+
+enum AccountType {
+  SUPERVISOR
+  ADMIN
+  INFLUENCER
+  CAMPAIGN_MANAGER
+}
+
+enum UserStatus {
+  ACTIVE
+  DELETED
+  BLOCKED
+}
+
+model Person {
+  id             String      @id @default(auto()) @map("_id") @db.ObjectId
+  username       String      @unique
+  email          String      @unique
+  profilePicture String?
+  status         UserStatus  @default(ACTIVE)
+  lastLogin      DateTime?
+  isActive       Boolean     @default(false)
+  accountType    AccountType
+  createdAt      DateTime    @default(now())
+  chats          String[]    @db.ObjectId
+  blocked        Boolean     @default(false)
+  verified       Boolean     @default(false)
+}

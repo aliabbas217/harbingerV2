@@ -1,0 +1,4 @@
+{
+  "ext": "ts, json, js, html, env, css",
+  "ignore": ["node_modules"]
+}

@@ -5,22 +5,28 @@
   "type": "module",
   "main": "server.js",
   "scripts": {
-    "start": "node --env-file=.env server.js",
-    "dev": "nodemon --env-file=.env server.js"
+    "start": "npx tsc && node --env-file=.env dist/server.js",
+    "dev": "npx tsc && nodemon --env-file=.env dist/server.js"
   },
   "dependencies": {
+    "@prisma/client": "^6.4.1",
     "bcryptjs": "^2.4.3",
     "express": "^4.18.2",
     "express-rate-limit": "^6.7.0",
     "jsonwebtoken": "^9.0.0",
     "kafkajs": "^2.2.4",
-    "mongoose": "^7.2.2",
     "socket.io": "^4.7.1",
     "socket.io-redis": "^6.1.0",
-    "validator": "^13.9.0"
+    "validator": "^13.9.0",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.13.9",
+    "nodemon": "^3.0.1",
+    "prisma": "^6.4.1",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
   },
   "author": "Ali Abbas Baig",
   "license": "ISC"
