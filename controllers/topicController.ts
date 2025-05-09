@@ -1,9 +1,8 @@
 import { Request, Response } from "express";
-import { PrismaClient as HarbingerClient } from "/home/ali-abbas/Documents/learn/harbinger/prisma/generated/harbinger/index.js";
-
+import { PrismaClient as HorizonClient } from "../prisma/generated/horizon/index.js";
 import { z } from "zod";
 
-const harbinger = new HarbingerClient();
+const horizon = new HorizonClient();
 
 /*
 model Topic {
@@ -44,7 +43,7 @@ export const createTopic = async (
         .end();
       return;
     }
-    const createdTopic = await harbinger.topic.create({
+    const createdTopic = await horizon.topic.create({
       data: topic.data,
     });
     res.status(200).json({ success: true, data: createdTopic }).end();
@@ -60,7 +59,7 @@ export const createTopic = async (
 // Get all topics
 export const getAllTopics = async (req: Request, res: Response) => {
   try {
-    const topics = await harbinger.topic.findMany();
+    const topics = await horizon.topic.findMany();
     if (!topics) {
       res
         .status(404)
@@ -85,7 +84,7 @@ export const getAllTopics = async (req: Request, res: Response) => {
 export const getTopicByTopicId = async (req: Request, res: Response) => {
   try {
     const { topicId } = req.params;
-    const topic = await harbinger.topic.findUnique({
+    const topic = await horizon.topic.findUnique({
       where: {
         id: topicId,
       },
@@ -114,7 +113,7 @@ export const getTopicByTopicId = async (req: Request, res: Response) => {
 export const getTopicsByChatId = async (req: Request, res: Response) => {
   try {
     const { chatId } = req.params;
-    const chat = await harbinger.chat.findUnique({
+    const chat = await horizon.chat.findUnique({
       where: {
         id: chatId,
       },
@@ -130,7 +129,7 @@ export const getTopicsByChatId = async (req: Request, res: Response) => {
         .end();
       return;
     }
-    const topics = await harbinger.topic.findMany({
+    const topics = await horizon.topic.findMany({
       where: {
         id: {
           in: chat.topics.map((topic) => topic.id),
@@ -154,7 +153,7 @@ export const getTopicsByChatId = async (req: Request, res: Response) => {
 export const deleteTopicByTopicId = async (req: Request, res: Response) => {
   try {
     const { topicId } = req.params;
-    const topic = await harbinger.topic.delete({
+    const topic = await horizon.topic.delete({
       where: {
         id: topicId,
       },
@@ -179,7 +178,7 @@ export const deleteTopicByTopicIdAndUserId = async (
 ) => {
   try {
     const { topicId, userId } = req.params;
-    const topic = await harbinger.topic.findUnique({
+    const topic = await horizon.topic.findUnique({
       where: {
         id: topicId,
       },
@@ -203,7 +202,7 @@ export const deleteTopicByTopicIdAndUserId = async (
         .end();
       return;
     }
-    const updatedTopic = await harbinger.topic.update({
+    const updatedTopic = await horizon.topic.update({
       where: {
         id: topicId,
       },

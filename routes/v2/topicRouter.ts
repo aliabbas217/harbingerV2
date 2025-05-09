@@ -1,9 +1,9 @@
 import { Router } from "express";
 
 import {
-  createTopic, // ("/")
-  getAllTopics, // ("/")
-  getTopicByTopicId, // ()
+  createTopic,
+  getAllTopics,
+  getTopicByTopicId,
   getTopicsByChatId,
   deleteTopicByTopicId,
   deleteTopicByTopicIdAndUserId,

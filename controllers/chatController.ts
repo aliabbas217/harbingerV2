@@ -1,10 +1,8 @@
 import { Request, Response } from "express";
-import { PrismaClient as HarbingerClient } from "/home/ali-abbas/Documents/learn/harbinger/prisma/generated/harbinger/index.js";
-import { PrismaClient as HorizonClient } from "/home/ali-abbas/Documents/learn/harbinger/prisma/generated/horizon/index.js";
+import { PrismaClient as HorizonClient } from "../prisma/generated/horizon/index.js";
 
 import { z } from "zod";
 
-const harbinger = new HarbingerClient();
 const horizon = new HorizonClient();
 
 /*
@@ -54,7 +52,7 @@ export const createChat = async (req: Request, res: Response) => {
         .end();
       return;
     }
-    const chat = await harbinger.chat.create({
+    const chat = await horizon.chat.create({
       data: {
         participants: validatedData.data.participants,
         visibleTo: validatedData.data.participants,
@@ -99,7 +97,7 @@ export const createChat = async (req: Request, res: Response) => {
 // Get all chats
 export const getAllChats = async (req: Request, res: Response) => {
   try {
-    const chats = await harbinger.chat.findMany();
+    const chats = await horizon.chat.findMany();
     res
       .status(200)
       .json({ success: true, data: chats, message: "Chats found" })
@@ -131,7 +129,7 @@ export const getAllChatsByUserId = async (req: Request, res: Response) => {
       return;
     }
 
-    const chats = await harbinger.chat.findMany({
+    const chats = await horizon.chat.findMany({
       where: {
         id: {
           in: user.chats,
@@ -156,7 +154,7 @@ export const getAllChatsByUserId = async (req: Request, res: Response) => {
 export const getChatByChatId = async (req: Request, res: Response) => {
   try {
     const { chatId } = req.params;
-    const chat = await harbinger.chat.findUnique({
+    const chat = await horizon.chat.findUnique({
       where: {
         id: chatId,
       },
@@ -187,7 +185,7 @@ export const getChatByChatId = async (req: Request, res: Response) => {
 export const deleteChatByChatId = async (req: Request, res: Response) => {
   try {
     const { chatId } = req.params;
-    const chat = await harbinger.chat.delete({
+    const chat = await horizon.chat.delete({
       where: {
         id: chatId,
       },
@@ -224,7 +222,7 @@ export const deleteChatsByUserId = async (req: Request, res: Response) => {
       return;
     }
 
-    const chats = await harbinger.chat.findMany({
+    const chats = await horizon.chat.findMany({
       where: {
         id: {
           in: user.chats,
@@ -232,7 +230,7 @@ export const deleteChatsByUserId = async (req: Request, res: Response) => {
       },
     });
 
-    await harbinger.chat.deleteMany({
+    await horizon.chat.deleteMany({
       where: {
         id: {
           in: user.chats,
@@ -282,7 +280,7 @@ export const deleteChatForOneUser = async (req: Request, res: Response) => {
       return;
     }
 
-    const chat = await harbinger.chat.findUnique({
+    const chat = await horizon.chat.findUnique({
       where: {
         id: chatId,
       },
@@ -310,13 +308,13 @@ export const deleteChatForOneUser = async (req: Request, res: Response) => {
     chat.visibleTo.filter((id) => id != personId);
 
     if (chat.visibleTo.length === 0) {
-      await harbinger.chat.delete({
+      await horizon.chat.delete({
         where: {
           id: chat.id,
         },
       });
     } else {
-      await harbinger.chat.update({
+      await horizon.chat.update({
         where: {
           id: chatId,
         },

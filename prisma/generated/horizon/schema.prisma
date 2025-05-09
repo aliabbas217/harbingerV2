@@ -21,6 +21,22 @@ enum UserStatus {
   BLOCKED
 }
 
+enum MediaType {
+  JPG
+  PNG
+  PDF
+  GIF
+  OTHER
+}
+
+enum MessageStatus {
+  SENT
+  DELIVERED
+  SEEN
+  ERROR
+  SENDING
+}
+
 model Person {
   id             String      @id @default(auto()) @map("_id") @db.ObjectId
   username       String      @unique
@@ -34,4 +50,35 @@ model Person {
   chats          String[]    @db.ObjectId
   blocked        Boolean     @default(false)
   verified       Boolean     @default(false)
+}
+
+model Chat {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  participants String[]
+  topics       Topic[]  @relation("ChatTopics")
+  visibleTo    String[]
+}
+
+model Topic {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  topicName   String    @default("General")
+  createdBy   String
+  visibleTo   String[]
+  dateCreated DateTime  @default(now())
+  messages    Message[] @relation("TopicMessages")
+  chatId      String    @db.ObjectId
+  chat        Chat      @relation("ChatTopics", fields: [chatId], references: [id], onDelete: Cascade)
+}
+
+model Message {
+  id        String        @id @default(auto()) @map("_id") @db.ObjectId
+  sender    String
+  text      String?
+  mediaUrl  String?
+  mediaType MediaType?
+  status    MessageStatus @default(SENDING)
+  timestamp DateTime      @default(now())
+  topicId   String        @db.ObjectId
+  topic     Topic         @relation("TopicMessages", fields: [topicId], references: [id], onDelete: Cascade)
+  visibleTo String[]
 }

@@ -125,6 +125,33 @@ exports.Prisma.PersonScalarFieldEnum = {
   verified: 'verified'
 };
 
+exports.Prisma.ChatScalarFieldEnum = {
+  id: 'id',
+  participants: 'participants',
+  visibleTo: 'visibleTo'
+};
+
+exports.Prisma.TopicScalarFieldEnum = {
+  id: 'id',
+  topicName: 'topicName',
+  createdBy: 'createdBy',
+  visibleTo: 'visibleTo',
+  dateCreated: 'dateCreated',
+  chatId: 'chatId'
+};
+
+exports.Prisma.MessageScalarFieldEnum = {
+  id: 'id',
+  sender: 'sender',
+  text: 'text',
+  mediaUrl: 'mediaUrl',
+  mediaType: 'mediaType',
+  status: 'status',
+  timestamp: 'timestamp',
+  topicId: 'topicId',
+  visibleTo: 'visibleTo'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -147,8 +174,27 @@ exports.AccountType = exports.$Enums.AccountType = {
   CAMPAIGN_MANAGER: 'CAMPAIGN_MANAGER'
 };
 
+exports.MediaType = exports.$Enums.MediaType = {
+  JPG: 'JPG',
+  PNG: 'PNG',
+  PDF: 'PDF',
+  GIF: 'GIF',
+  OTHER: 'OTHER'
+};
+
+exports.MessageStatus = exports.$Enums.MessageStatus = {
+  SENT: 'SENT',
+  DELIVERED: 'DELIVERED',
+  SEEN: 'SEEN',
+  ERROR: 'ERROR',
+  SENDING: 'SENDING'
+};
+
 exports.Prisma.ModelName = {
-  Person: 'Person'
+  Person: 'Person',
+  Chat: 'Chat',
+  Topic: 'Topic',
+  Message: 'Message'
 };
 
 /**

@@ -1,9 +1,7 @@
 import { Request, Response } from "express";
-import { PrismaClient as HarbingerClient } from "/home/ali-abbas/Documents/learn/harbinger/prisma/generated/harbinger/index.js";
-import { PrismaClient as HorizonClient } from "/home/ali-abbas/Documents/learn/harbinger/prisma/generated/horizon/index.js";
+import { PrismaClient as HorizonClient } from "../prisma/generated/horizon/index.js";
 import { z } from "zod";
 
-const harbinger = new HarbingerClient();
 const horizon = new HorizonClient();
 
 /*
@@ -66,7 +64,7 @@ export const createMessage = async (req: Request, res: Response) => {
       return;
     }
 
-    const topic = await harbinger.topic.findUnique({
+    const topic = await horizon.topic.findUnique({
       where: {
         id: message.data.topicId,
       },
@@ -80,7 +78,7 @@ export const createMessage = async (req: Request, res: Response) => {
       return;
     }
 
-    const newMessage = await harbinger.message.create({
+    const newMessage = await horizon.message.create({
       data: {
         sender: message.data.sender,
         text: message.data.text,
@@ -108,7 +106,7 @@ export const createMessage = async (req: Request, res: Response) => {
 // get all messages
 export const getAllMessages = async (req: Request, res: Response) => {
   try {
-    const messages = await harbinger.message.findMany();
+    const messages = await horizon.message.findMany();
     if (!messages) {
       res
         .status(404)
@@ -133,7 +131,7 @@ export const getAllMessages = async (req: Request, res: Response) => {
 export const getMessageById = async (req: Request, res: Response) => {
   try {
     const { messageId } = req.params;
-    const message = await harbinger.message.findUnique({
+    const message = await horizon.message.findUnique({
       where: {
         id: messageId,
       },
@@ -162,7 +160,7 @@ export const getMessageById = async (req: Request, res: Response) => {
 export const getAllMessagesByTopicId = async (req: Request, res: Response) => {
   try {
     const { topicId } = req.params;
-    const topic = await harbinger.topic.findUnique({
+    const topic = await horizon.topic.findUnique({
       where: {
         id: topicId,
       },
@@ -178,7 +176,7 @@ export const getAllMessagesByTopicId = async (req: Request, res: Response) => {
       return;
     }
 
-    const messages = await harbinger.message.findMany({
+    const messages = await horizon.message.findMany({
       where: {
         id: {
           in: topic.messages.map((message: { id: string }) => message.id),
@@ -222,7 +220,7 @@ export const updateMessageById = async (req: Request, res: Response) => {
         .end();
       return;
     }
-    const updatedMessage = await harbinger.message.update({
+    const updatedMessage = await horizon.message.update({
       where: {
         id: messageId,
       },
@@ -249,7 +247,7 @@ export const updateMessageById = async (req: Request, res: Response) => {
 export const deleteMessageById = async (req: Request, res: Response) => {
   try {
     const { messageId } = req.params;
-    const deletedMessage = await harbinger.message.delete({
+    const deletedMessage = await horizon.message.delete({
       where: {
         id: messageId,
       },
@@ -274,7 +272,7 @@ export const deleteMessageById = async (req: Request, res: Response) => {
 // delete all messages
 export const deleteAllMessages = async (req: Request, res: Response) => {
   try {
-    const deletedMessages = await harbinger.message.deleteMany();
+    const deletedMessages = await horizon.message.deleteMany();
     res
       .status(200)
       .json({
@@ -299,7 +297,7 @@ export const deleteAllMessagesByTopicId = async (
 ) => {
   try {
     const { topicId } = req.params;
-    const deletedMessages = await harbinger.message.deleteMany({
+    const deletedMessages = await horizon.message.deleteMany({
       where: {
         topicId: topicId,
       },
@@ -338,7 +336,7 @@ export const deleteMessagesByUserId = async (req: Request, res: Response) => {
       return;
     }
 
-    const deletedMessages = await harbinger.message.deleteMany({
+    const deletedMessages = await horizon.message.deleteMany({
       where: {
         sender: userId,
       },
@@ -367,7 +365,7 @@ export const deleteMessageByMessageIdAndUserId = async (
 ) => {
   try {
     const { messageId, personId } = req.params;
-    const message = await harbinger.message.findUnique({
+    const message = await horizon.message.findUnique({
       where: {
         id: messageId,
       },
@@ -388,7 +386,7 @@ export const deleteMessageByMessageIdAndUserId = async (
       return;
     }
 
-    const deletedMessage = await harbinger.message.delete({
+    const deletedMessage = await horizon.message.delete({
       where: {
         id: messageId,
       },
