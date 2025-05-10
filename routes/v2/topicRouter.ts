@@ -6,7 +6,7 @@ import {
   getTopicByTopicId,
   getTopicsByChatId,
   deleteTopicByTopicId,
-  deleteTopicByTopicIdAndUserId,
+  deleteTopicByTopicIdAndPersonId,
 } from "../../controllers/topicController.js";
 
 const topicRouter = Router();
@@ -19,6 +19,6 @@ topicRouter
 topicRouter.route("/chat/:chatId").get(getTopicsByChatId);
 topicRouter
   .route("/:topicId/person/:personId")
-  .delete(deleteTopicByTopicIdAndUserId);
+  .delete(deleteTopicByTopicIdAndPersonId);
 
 export default topicRouter;

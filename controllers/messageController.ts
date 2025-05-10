@@ -1,409 +1,347 @@
 import { Request, Response } from "express";
-import { PrismaClient as HorizonClient } from "../prisma/generated/horizon/index.js";
+import {
+  PrismaClient as HorizonClient,
+  MediaType,
+  MessageStatus,
+} from "../prisma/generated/horizon/index.js";
 import { z } from "zod";
 
 const horizon = new HorizonClient();
 
-/*
-model Message {
-  id        String        @id @default(auto()) @map("_id") @db.ObjectId
-  sender    String
-  text      String?
-  mediaUrl  String?
-  mediaType MediaType?
-  status    MessageStatus @default(SENDING)
-  timestamp DateTime      @default(now())
-  topicId   String        @db.ObjectId
-  topic     Topic         @relation("TopicMessages", fields: [topicId], references: [id], onDelete: Cascade)
-  visibleTo String[]
-}
-
-enum MediaType {
-  JPG
-  PNG
-  PDF
-  GIF
-  OTHER
-}
-
-enum MessageStatus {
-  SENT
-  DELIVERED
-  SEEN
-  ERROR
-  SENDING
-}
-*/
-
-const messageSchema = z.object({
+const createMessageSchema = z.object({
   sender: z.string(),
   text: z.string().optional(),
-  mediaUrl: z.string().optional(),
-  mediaType: z.enum(["JPG", "PNG", "PDF", "GIF", "OTHER"]).optional(),
-  status: z
-    .enum(["SENT", "DELIVERED", "SEEN", "ERROR", "SENDING"])
-    .default("SENDING"),
-  timestamp: z.date().default(new Date()),
+  mediaUrl: z.string().url().optional(),
+  mediaType: z.nativeEnum(MediaType).optional(),
   topicId: z.string(),
-  visibleTo: z.array(z.string()),
 });
 
-// Create a new message
-export const createMessage = async (req: Request, res: Response) => {
+const updateMessageSchema = z.object({
+  text: z.string().optional(),
+  mediaUrl: z.string().url().optional(),
+  mediaType: z.nativeEnum(MediaType).optional(),
+  status: z.nativeEnum(MessageStatus).optional(),
+});
+
+export const createMessage = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
-    const message = messageSchema.safeParse(req.body);
-    if (!message.success) {
-      res
-        .status(400)
-        .json({
-          success: false,
-          data: message.error,
-          message: "Validation error",
-        })
-        .end();
+    const validationResult = createMessageSchema.safeParse(req.body);
+    if (!validationResult.success) {
+      res.status(400).json({
+        success: false,
+        errors: validationResult.error.flatten().fieldErrors,
+        message: "Validation error",
+      });
       return;
     }
 
+    const { sender, topicId, text, mediaUrl, mediaType } =
+      validationResult.data;
+
     const topic = await horizon.topic.findUnique({
-      where: {
-        id: message.data.topicId,
-      },
+      where: { id: topicId },
+      include: { chat: { select: { participants: true } } },
     });
 
     if (!topic) {
-      res
-        .status(404)
-        .json({ success: false, data: null, message: "Topic not found" })
-        .end();
+      res.status(404).json({ success: false, message: "Topic not found" });
+      return;
+    }
+
+    if (!topic.chat.participants.includes(sender)) {
+      res.status(403).json({
+        success: false,
+        message: "Sender is not authorized to post in this topic.",
+      });
       return;
     }
 
     const newMessage = await horizon.message.create({
       data: {
-        sender: message.data.sender,
-        text: message.data.text,
-        mediaUrl: message.data.mediaUrl,
-        mediaType: message.data.mediaType,
-        status: message.data.status,
-        timestamp: message.data.timestamp,
-        topicId: message.data.topicId,
-        visibleTo: message.data.visibleTo,
+        sender,
+        topicId,
+        text,
+        mediaUrl,
+        mediaType,
+        visibleTo: topic.chat.participants,
       },
     });
     res
       .status(201)
-      .json({ success: true, data: newMessage, message: "Message created" })
-      .end();
+      .json({ success: true, data: newMessage, message: "Message created" });
   } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ success: false, data: null, message: "Internal server error" })
-      .end();
+    console.error("Error creating message:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
-// get all messages
-export const getAllMessages = async (req: Request, res: Response) => {
+export const getAllMessages = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
-    const messages = await horizon.message.findMany();
-    if (!messages) {
+    const messages = await horizon.message.findMany({
+      orderBy: { timestamp: "desc" },
+    });
+
+    if (messages.length === 0) {
       res
-        .status(404)
-        .json({ success: true, data: null, message: "No messages found" })
-        .end();
+        .status(200)
+        .json({ success: true, data: [], message: "No messages found" });
       return;
     }
     res
       .status(200)
-      .json({ success: true, data: messages, message: "Messages found" })
-      .end();
+      .json({ success: true, data: messages, message: "Messages found" });
   } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ success: false, data: null, message: "Internal server error" })
-      .end();
+    console.error("Error getting all messages:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
-// get message by id
-export const getMessageById = async (req: Request, res: Response) => {
+export const getMessageById = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { messageId } = req.params;
     const message = await horizon.message.findUnique({
-      where: {
-        id: messageId,
-      },
+      where: { id: messageId },
     });
     if (!message) {
-      res
-        .status(404)
-        .json({ success: false, data: null, message: "Message not found" })
-        .end();
+      res.status(404).json({ success: false, message: "Message not found" });
       return;
     }
     res
       .status(200)
-      .json({ success: true, data: message, message: "Message found" })
-      .end();
+      .json({ success: true, data: message, message: "Message found" });
   } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ success: false, data: null, message: "Internal server error" })
-      .end();
+    console.error("Error getting message by ID:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
-// get all messages for a topic
-export const getAllMessagesByTopicId = async (req: Request, res: Response) => {
+export const getAllMessagesByTopicId = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { topicId } = req.params;
     const topic = await horizon.topic.findUnique({
-      where: {
-        id: topicId,
-      },
+      where: { id: topicId },
       select: {
-        messages: true,
-      },
-    });
-    if (!topic) {
-      res
-        .status(404)
-        .json({ success: false, data: null, message: "Topic not found" })
-        .end();
-      return;
-    }
-
-    const messages = await horizon.message.findMany({
-      where: {
-        id: {
-          in: topic.messages.map((message: { id: string }) => message.id),
+        messages: {
+          orderBy: { timestamp: "asc" },
         },
       },
     });
 
-    if (!messages) {
-      res
-        .status(404)
-        .json({ success: false, data: null, message: "No messages found" })
-        .end();
+    if (!topic) {
+      res.status(404).json({ success: false, message: "Topic not found" });
       return;
     }
+
+    if (!topic.messages || topic.messages.length === 0) {
+      res.status(200).json({
+        success: true,
+        data: [],
+        message: "No messages found for this topic",
+      });
+      return;
+    }
+
     res
       .status(200)
-      .json({ success: true, data: messages, message: "Messages found" })
-      .end();
+      .json({ success: true, data: topic.messages, message: "Messages found" });
   } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ success: false, data: null, message: "Internal server error" })
-      .end();
+    console.error("Error getting messages by topic ID:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
-// update message by id
-export const updateMessageById = async (req: Request, res: Response) => {
+export const updateMessageById = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { messageId } = req.params;
-    const message = messageSchema.safeParse(req.body);
-    if (!message.success) {
-      res
-        .status(400)
-        .json({
-          success: false,
-          data: message.error,
-          message: "Validation error",
-        })
-        .end();
+    const validationResult = updateMessageSchema.safeParse(req.body);
+
+    if (!validationResult.success) {
+      res.status(400).json({
+        success: false,
+        errors: validationResult.error.flatten().fieldErrors,
+        message: "Validation error",
+      });
       return;
     }
+
     const updatedMessage = await horizon.message.update({
-      where: {
-        id: messageId,
-      },
-      data: message.data,
+      where: { id: messageId },
+      data: validationResult.data,
     });
-    res
-      .status(200)
-      .json({
-        success: true,
-        data: updatedMessage,
-        message: "Message updated",
-      })
-      .end();
-  } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ success: false, data: null, message: "Internal server error" })
-      .end();
+    res.status(200).json({
+      success: true,
+      data: updatedMessage,
+      message: "Message updated",
+    });
+  } catch (error: any) {
+    console.error("Error updating message:", error);
+    if (error.code === "P2025") {
+      res
+        .status(404)
+        .json({ success: false, message: "Message not found to update" });
+    } else {
+      res
+        .status(500)
+        .json({ success: false, message: "Internal server error" });
+    }
   }
 };
 
-// delete message by id
-export const deleteMessageById = async (req: Request, res: Response) => {
+export const deleteMessageById = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { messageId } = req.params;
     const deletedMessage = await horizon.message.delete({
-      where: {
-        id: messageId,
-      },
+      where: { id: messageId },
     });
-    res
-      .status(200)
-      .json({
-        success: true,
-        data: deletedMessage,
-        message: "Message deleted",
-      })
-      .end();
-  } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ success: false, data: null, message: "Internal server error" })
-      .end();
+    res.status(200).json({
+      success: true,
+      data: deletedMessage,
+      message: "Message deleted",
+    });
+  } catch (error: any) {
+    console.error("Error deleting message:", error);
+    if (error.code === "P2025") {
+      res
+        .status(404)
+        .json({ success: false, message: "Message not found to delete" });
+    } else {
+      res
+        .status(500)
+        .json({ success: false, message: "Internal server error" });
+    }
   }
 };
 
-// delete all messages
-export const deleteAllMessages = async (req: Request, res: Response) => {
+export const deleteAllMessages = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
-    const deletedMessages = await horizon.message.deleteMany();
-    res
-      .status(200)
-      .json({
-        success: true,
-        data: deletedMessages,
-        message: "All messages deleted",
-      })
-      .end();
+    const deletedResult = await horizon.message.deleteMany();
+    res.status(200).json({
+      success: true,
+      data: { count: deletedResult.count },
+      message: "All messages deleted",
+    });
   } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ success: false, data: null, message: "Internal server error" })
-      .end();
+    console.error("Error deleting all messages:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
-// delete all messages for a topic
 export const deleteAllMessagesByTopicId = async (
   req: Request,
   res: Response
-) => {
+): Promise<void> => {
   try {
     const { topicId } = req.params;
-    const deletedMessages = await horizon.message.deleteMany({
-      where: {
-        topicId: topicId,
-      },
+    const topicExists = await horizon.topic.findUnique({
+      where: { id: topicId },
     });
-    res
-      .status(200)
-      .json({
-        success: true,
-        data: deletedMessages,
-        message: "All messages for topic deleted",
-      })
-      .end();
-  } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ success: false, data: null, message: "Internal server error" })
-      .end();
-  }
-};
-
-// delete messages for a user
-export const deleteMessagesByUserId = async (req: Request, res: Response) => {
-  try {
-    const { userId } = req.params;
-    const person = await horizon.person.findUnique({
-      where: {
-        id: userId,
-      },
-    });
-    if (!person) {
-      res
-        .status(404)
-        .json({ success: false, data: null, message: "User not found" })
-        .end();
+    if (!topicExists) {
+      res.status(404).json({ success: false, message: "Topic not found." });
       return;
     }
 
-    const deletedMessages = await horizon.message.deleteMany({
-      where: {
-        sender: userId,
-      },
+    const deletedResult = await horizon.message.deleteMany({
+      where: { topicId: topicId },
     });
-    res
-      .status(200)
-      .json({
-        success: true,
-        data: deletedMessages,
-        message: "All messages for user deleted",
-      })
-      .end();
+    res.status(200).json({
+      success: true,
+      data: { count: deletedResult.count },
+      message: `All messages for topic ${topicId} deleted`,
+    });
   } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ success: false, data: null, message: "Internal server error" })
-      .end();
+    console.error("Error deleting messages by topic:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
-// delete message by id and for a user (controlling visiblity)
-export const deleteMessageByMessageIdAndUserId = async (
+export const deleteMessagesByPersonId = async (
   req: Request,
   res: Response
-) => {
+): Promise<void> => {
+  try {
+    const { personId } = req.params;
+    const person = await horizon.person.findUnique({
+      where: { id: personId },
+    });
+    if (!person) {
+      res.status(404).json({ success: false, message: "Person not found" });
+      return;
+    }
+
+    const deletedResult = await horizon.message.deleteMany({
+      where: { sender: personId },
+    });
+    res.status(200).json({
+      success: true,
+      data: { count: deletedResult.count },
+      message: `All messages sent by person ${personId} deleted`,
+    });
+  } catch (error) {
+    console.error("Error deleting messages by person:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+export const deleteMessageByMessageIdAndPersonId = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { messageId, personId } = req.params;
     const message = await horizon.message.findUnique({
-      where: {
-        id: messageId,
-      },
+      where: { id: messageId },
     });
+
     if (!message) {
-      res
-        .status(404)
-        .json({ success: false, data: null, message: "Message not found" })
-        .end();
+      res.status(404).json({ success: false, message: "Message not found" });
       return;
     }
 
     if (message.sender !== personId) {
-      res
-        .status(403)
-        .json({ success: false, data: null, message: "Forbidden" })
-        .end();
+      res.status(403).json({
+        success: false,
+        message: "Forbidden: You can only delete your own messages.",
+      });
       return;
     }
 
     const deletedMessage = await horizon.message.delete({
-      where: {
-        id: messageId,
-      },
+      where: { id: messageId },
     });
-    res
-      .status(200)
-      .json({
-        success: true,
-        data: deletedMessage,
-        message: "Message deleted",
-      })
-      .end();
-  } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ success: false, data: null, message: "Internal server error" })
-      .end();
+    res.status(200).json({
+      success: true,
+      data: deletedMessage,
+      message: "Message deleted successfully by sender",
+    });
+  } catch (error: any) {
+    console.error("Error in deleteMessageByMessageIdAndPersonId:", error);
+    if (error.code === "P2025") {
+      res.status(404).json({ success: false, message: "Message not found" });
+    } else {
+      res
+        .status(500)
+        .json({ success: false, message: "Internal server error" });
+    }
   }
 };

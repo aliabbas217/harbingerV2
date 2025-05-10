@@ -3,6 +3,7 @@ import http from "http";
 import { Server } from "socket.io";
 import cors from "cors";
 import sockets from "./sockets/sockets.js";
+import { Socket } from "socket.io";
 
 // v2 routes
 import chatRouter from "./routes/v2/chatRouter.js";
@@ -32,5 +33,5 @@ app.get(`${apiV2}/health`, (req, res) => {
     .end();
 });
 
-export const onlineUsers = {};
+export const onlineUsers: { [key: string]: Socket["id"] } = {};
 sockets(io, onlineUsers);

@@ -4,225 +4,205 @@ import { z } from "zod";
 
 const horizon = new HorizonClient();
 
-/*
-model Topic {
-    id          String    @id @default(auto()) @map("_id") @db.ObjectId
-    topicName   String
-    createdBy   String
-    visibleTo   String[]
-    dateCreated DateTime  @default(now())
-    messages    Message[] @relation("TopicMessages")
-    chatId      String    @db.ObjectId
-    chat        Chat      @relation("ChatTopics", fields: [chatId], references: [id], onDelete: Cascade)
-  }
-*/
-
-// topic schema
 const topicSchema = z.object({
-  topicName: z.string(),
-  createdBy: z.string(),
-  visibleTo: z.array(z.string()).min(1).max(2),
-  chatId: z.string(),
+  topicName: z.string().min(1, "Topic name cannot be empty."),
+  createdBy: z.string(), // Person ID
+  visibleTo: z
+    .array(z.string())
+    .min(1, "Topic must be visible to at least one person."), // Array of Person IDs
+  chatId: z.string(), // Should be a valid Chat ID
 });
 
-// Create Topic
 export const createTopic = async (
   req: Request,
   res: Response
 ): Promise<void> => {
   try {
-    const topic = topicSchema.safeParse(req.body);
-    if (!topic.success) {
-      res
-        .status(400)
-        .json({
-          success: false,
-          data: topic.error,
-          message: "Validation error",
-        })
-        .end();
+    const validationResult = topicSchema.safeParse(req.body);
+    if (!validationResult.success) {
+      res.status(400).json({
+        success: false,
+        errors: validationResult.error.flatten().fieldErrors,
+        message: "Validation error",
+      });
       return;
     }
+
+    const { chatId } = validationResult.data;
+    const chatExists = await horizon.chat.findUnique({ where: { id: chatId } });
+    if (!chatExists) {
+      res.status(404).json({ success: false, message: "Chat not found." });
+      return;
+    }
+
     const createdTopic = await horizon.topic.create({
-      data: topic.data,
+      data: validationResult.data,
     });
-    res.status(200).json({ success: true, data: createdTopic }).end();
-  } catch (error) {
-    console.error(error);
     res
-      .status(500)
-      .json({ success: false, data: null, message: "Internal server error" })
-      .end();
+      .status(201)
+      .json({ success: true, data: createdTopic, message: "Topic created" });
+  } catch (error) {
+    console.error("Error creating topic:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
-// Get all topics
-export const getAllTopics = async (req: Request, res: Response) => {
+export const getAllTopics = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const topics = await horizon.topic.findMany();
-    if (!topics) {
+    if (topics.length === 0) {
       res
-        .status(404)
-        .json({ success: false, data: null, message: "No topics found" })
-        .end();
+        .status(200)
+        .json({ success: true, data: [], message: "No topics found" });
       return;
     }
     res
       .status(200)
-      .json({ success: true, data: topics, message: "Topics found" })
-      .end();
+      .json({ success: true, data: topics, message: "Topics found" });
   } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ success: false, data: null, message: "Internal server error" })
-      .end();
+    console.error("Error getting all topics:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
-// Get topic by id
-export const getTopicByTopicId = async (req: Request, res: Response) => {
+export const getTopicByTopicId = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { topicId } = req.params;
     const topic = await horizon.topic.findUnique({
-      where: {
-        id: topicId,
-      },
+      where: { id: topicId },
     });
     if (!topic) {
-      res
-        .status(404)
-        .json({ success: false, data: null, message: "Topic not found" })
-        .end();
+      res.status(404).json({ success: false, message: "Topic not found" });
       return;
     }
     res
       .status(200)
-      .json({ success: true, data: topic, message: "Topic found" })
-      .end();
+      .json({ success: true, data: topic, message: "Topic found" });
   } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ success: false, data: null, message: "Internal server error" })
-      .end();
+    console.error("Error getting topic by ID:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
-// get all topics by chat id
-export const getTopicsByChatId = async (req: Request, res: Response) => {
+export const getTopicsByChatId = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { chatId } = req.params;
     const chat = await horizon.chat.findUnique({
-      where: {
-        id: chatId,
-      },
+      where: { id: chatId },
       include: {
         topics: true,
       },
     });
 
     if (!chat) {
-      res
-        .status(404)
-        .json({ success: false, data: null, message: "Chat not found" })
-        .end();
+      res.status(404).json({ success: false, message: "Chat not found" });
       return;
     }
-    const topics = await horizon.topic.findMany({
-      where: {
-        id: {
-          in: chat.topics.map((topic) => topic.id),
-        },
-      },
-    });
+
     res
       .status(200)
-      .json({ success: true, data: topics, message: "Topics found" })
-      .end();
+      .json({
+        success: true,
+        data: chat.topics,
+        message: "Topics found for chat",
+      });
   } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ success: false, data: null, message: "Internal server error" })
-      .end();
+    console.error("Error getting topics by chat ID:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
-// delete topic by id
-export const deleteTopicByTopicId = async (req: Request, res: Response) => {
+export const deleteTopicByTopicId = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { topicId } = req.params;
     const topic = await horizon.topic.delete({
-      where: {
-        id: topicId,
-      },
-    });
-    res
-      .status(200)
-      .json({ success: true, data: topic, message: "Topic deleted" })
-      .end();
-  } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ success: false, data: null, message: "Internal server error" })
-      .end();
-  }
-};
-
-// delete topic by topic id and user id (visibility settings)
-export const deleteTopicByTopicIdAndUserId = async (
-  req: Request,
-  res: Response
-) => {
-  try {
-    const { topicId, userId } = req.params;
-    const topic = await horizon.topic.findUnique({
-      where: {
-        id: topicId,
-      },
-    });
-    if (!topic) {
-      res
-        .status(404)
-        .json({ success: false, data: null, message: "Topic not found" })
-        .end();
-      return;
-    }
-    const updatedVisibleTo = topic.visibleTo.filter((user) => user !== userId);
-    if (updatedVisibleTo.length === 0) {
-      res
-        .status(400)
-        .json({
-          success: false,
-          data: null,
-          message: "Topic not visible to user",
-        })
-        .end();
-      return;
-    }
-    const updatedTopic = await horizon.topic.update({
-      where: {
-        id: topicId,
-      },
-      data: {
-        visibleTo: updatedVisibleTo,
-      },
+      where: { id: topicId },
     });
     res
       .status(200)
       .json({
         success: true,
+        data: topic,
+        message: "Topic deleted successfully",
+      });
+  } catch (error: any) {
+    console.error("Error deleting topic by ID:", error);
+    if (error.code === "P2025") {
+      res.status(404).json({ success: false, message: "Topic not found" });
+    } else {
+      res
+        .status(500)
+        .json({ success: false, message: "Internal server error" });
+    }
+  }
+};
+
+// Renamed userId to personId
+export const deleteTopicByTopicIdAndPersonId = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { topicId, personId } = req.params; // Changed from userId
+
+    const topic = await horizon.topic.findUnique({
+      where: { id: topicId },
+    });
+
+    if (!topic) {
+      res.status(404).json({ success: false, message: "Topic not found" });
+      return;
+    }
+
+    if (!topic.visibleTo.includes(personId)) {
+      // Changed from userId
+      res
+        .status(400)
+        .json({
+          success: false,
+          message: "Person is not in the topic's visibility list.",
+        });
+      return;
+    }
+
+    const updatedVisibleTo = topic.visibleTo.filter(
+      (userInList) => userInList !== personId
+    ); // Changed from userId
+
+    if (updatedVisibleTo.length === 0) {
+      await horizon.topic.delete({
+        where: { id: topicId },
+      });
+      res.status(200).json({
+        success: true,
+        message:
+          "Person removed from topic visibility; topic deleted as it became invisible.",
+      });
+    } else {
+      const updatedTopic = await horizon.topic.update({
+        where: { id: topicId },
+        data: { visibleTo: updatedVisibleTo },
+      });
+      res.status(200).json({
+        success: true,
         data: updatedTopic,
-        message: "Topic deleted for user",
-      })
-      .end();
+        message: "Person removed from topic visibility.",
+      });
+    }
   } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ success: false, data: null, message: "Internal server error" })
-      .end();
+    console.error("Error in deleteTopicByTopicIdAndPersonId:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
