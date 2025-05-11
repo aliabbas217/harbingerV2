@@ -1231,11 +1231,14 @@ export namespace Prisma {
     username: string | null
     email: string | null
     profilePicture: string | null
+    passwordHash: string | null
     status: $Enums.UserStatus | null
     lastLogin: Date | null
     isActive: boolean | null
     accountType: $Enums.AccountType | null
     createdAt: Date | null
+    updatedAt: Date | null
+    accountId: string | null
     blocked: boolean | null
     verified: boolean | null
   }
@@ -1245,11 +1248,14 @@ export namespace Prisma {
     username: string | null
     email: string | null
     profilePicture: string | null
+    passwordHash: string | null
     status: $Enums.UserStatus | null
     lastLogin: Date | null
     isActive: boolean | null
     accountType: $Enums.AccountType | null
     createdAt: Date | null
+    updatedAt: Date | null
+    accountId: string | null
     blocked: boolean | null
     verified: boolean | null
   }
@@ -1259,12 +1265,15 @@ export namespace Prisma {
     username: number
     email: number
     profilePicture: number
+    passwordHash: number
     status: number
     lastLogin: number
     isActive: number
     accountType: number
     createdAt: number
+    updatedAt: number
     chats: number
+    accountId: number
     blocked: number
     verified: number
     _all: number
@@ -1276,11 +1285,14 @@ export namespace Prisma {
     username?: true
     email?: true
     profilePicture?: true
+    passwordHash?: true
     status?: true
     lastLogin?: true
     isActive?: true
     accountType?: true
     createdAt?: true
+    updatedAt?: true
+    accountId?: true
     blocked?: true
     verified?: true
   }
@@ -1290,11 +1302,14 @@ export namespace Prisma {
     username?: true
     email?: true
     profilePicture?: true
+    passwordHash?: true
     status?: true
     lastLogin?: true
     isActive?: true
     accountType?: true
     createdAt?: true
+    updatedAt?: true
+    accountId?: true
     blocked?: true
     verified?: true
   }
@@ -1304,12 +1319,15 @@ export namespace Prisma {
     username?: true
     email?: true
     profilePicture?: true
+    passwordHash?: true
     status?: true
     lastLogin?: true
     isActive?: true
     accountType?: true
     createdAt?: true
+    updatedAt?: true
     chats?: true
+    accountId?: true
     blocked?: true
     verified?: true
     _all?: true
@@ -1392,12 +1410,15 @@ export namespace Prisma {
     username: string
     email: string
     profilePicture: string | null
+    passwordHash: string
     status: $Enums.UserStatus
     lastLogin: Date | null
     isActive: boolean
     accountType: $Enums.AccountType
     createdAt: Date
+    updatedAt: Date
     chats: string[]
+    accountId: string | null
     blocked: boolean
     verified: boolean
     _count: PersonCountAggregateOutputType | null
@@ -1424,12 +1445,15 @@ export namespace Prisma {
     username?: boolean
     email?: boolean
     profilePicture?: boolean
+    passwordHash?: boolean
     status?: boolean
     lastLogin?: boolean
     isActive?: boolean
     accountType?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
     chats?: boolean
+    accountId?: boolean
     blocked?: boolean
     verified?: boolean
   }, ExtArgs["result"]["person"]>
@@ -1441,17 +1465,20 @@ export namespace Prisma {
     username?: boolean
     email?: boolean
     profilePicture?: boolean
+    passwordHash?: boolean
     status?: boolean
     lastLogin?: boolean
     isActive?: boolean
     accountType?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
     chats?: boolean
+    accountId?: boolean
     blocked?: boolean
     verified?: boolean
   }
 
-  export type PersonOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "username" | "email" | "profilePicture" | "status" | "lastLogin" | "isActive" | "accountType" | "createdAt" | "chats" | "blocked" | "verified", ExtArgs["result"]["person"]>
+  export type PersonOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "username" | "email" | "profilePicture" | "passwordHash" | "status" | "lastLogin" | "isActive" | "accountType" | "createdAt" | "updatedAt" | "chats" | "accountId" | "blocked" | "verified", ExtArgs["result"]["person"]>
 
   export type $PersonPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Person"
@@ -1461,12 +1488,15 @@ export namespace Prisma {
       username: string
       email: string
       profilePicture: string | null
+      passwordHash: string
       status: $Enums.UserStatus
       lastLogin: Date | null
       isActive: boolean
       accountType: $Enums.AccountType
       createdAt: Date
+      updatedAt: Date
       chats: string[]
+      accountId: string | null
       blocked: boolean
       verified: boolean
     }, ExtArgs["result"]["person"]>
@@ -1865,12 +1895,15 @@ export namespace Prisma {
     readonly username: FieldRef<"Person", 'String'>
     readonly email: FieldRef<"Person", 'String'>
     readonly profilePicture: FieldRef<"Person", 'String'>
+    readonly passwordHash: FieldRef<"Person", 'String'>
     readonly status: FieldRef<"Person", 'UserStatus'>
     readonly lastLogin: FieldRef<"Person", 'DateTime'>
     readonly isActive: FieldRef<"Person", 'Boolean'>
     readonly accountType: FieldRef<"Person", 'AccountType'>
     readonly createdAt: FieldRef<"Person", 'DateTime'>
+    readonly updatedAt: FieldRef<"Person", 'DateTime'>
     readonly chats: FieldRef<"Person", 'String[]'>
+    readonly accountId: FieldRef<"Person", 'String'>
     readonly blocked: FieldRef<"Person", 'Boolean'>
     readonly verified: FieldRef<"Person", 'Boolean'>
   }
@@ -5240,12 +5273,15 @@ export namespace Prisma {
     username: 'username',
     email: 'email',
     profilePicture: 'profilePicture',
+    passwordHash: 'passwordHash',
     status: 'status',
     lastLogin: 'lastLogin',
     isActive: 'isActive',
     accountType: 'accountType',
     createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
     chats: 'chats',
+    accountId: 'accountId',
     blocked: 'blocked',
     verified: 'verified'
   };
@@ -5426,12 +5462,15 @@ export namespace Prisma {
     username?: StringFilter<"Person"> | string
     email?: StringFilter<"Person"> | string
     profilePicture?: StringNullableFilter<"Person"> | string | null
+    passwordHash?: StringFilter<"Person"> | string
     status?: EnumUserStatusFilter<"Person"> | $Enums.UserStatus
     lastLogin?: DateTimeNullableFilter<"Person"> | Date | string | null
     isActive?: BoolFilter<"Person"> | boolean
     accountType?: EnumAccountTypeFilter<"Person"> | $Enums.AccountType
     createdAt?: DateTimeFilter<"Person"> | Date | string
+    updatedAt?: DateTimeFilter<"Person"> | Date | string
     chats?: StringNullableListFilter<"Person">
+    accountId?: StringNullableFilter<"Person"> | string | null
     blocked?: BoolFilter<"Person"> | boolean
     verified?: BoolFilter<"Person"> | boolean
   }
@@ -5441,12 +5480,15 @@ export namespace Prisma {
     username?: SortOrder
     email?: SortOrder
     profilePicture?: SortOrder
+    passwordHash?: SortOrder
     status?: SortOrder
     lastLogin?: SortOrder
     isActive?: SortOrder
     accountType?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     chats?: SortOrder
+    accountId?: SortOrder
     blocked?: SortOrder
     verified?: SortOrder
   }
@@ -5459,12 +5501,15 @@ export namespace Prisma {
     OR?: PersonWhereInput[]
     NOT?: PersonWhereInput | PersonWhereInput[]
     profilePicture?: StringNullableFilter<"Person"> | string | null
+    passwordHash?: StringFilter<"Person"> | string
     status?: EnumUserStatusFilter<"Person"> | $Enums.UserStatus
     lastLogin?: DateTimeNullableFilter<"Person"> | Date | string | null
     isActive?: BoolFilter<"Person"> | boolean
     accountType?: EnumAccountTypeFilter<"Person"> | $Enums.AccountType
     createdAt?: DateTimeFilter<"Person"> | Date | string
+    updatedAt?: DateTimeFilter<"Person"> | Date | string
     chats?: StringNullableListFilter<"Person">
+    accountId?: StringNullableFilter<"Person"> | string | null
     blocked?: BoolFilter<"Person"> | boolean
     verified?: BoolFilter<"Person"> | boolean
   }, "id" | "username" | "email">
@@ -5474,12 +5519,15 @@ export namespace Prisma {
     username?: SortOrder
     email?: SortOrder
     profilePicture?: SortOrder
+    passwordHash?: SortOrder
     status?: SortOrder
     lastLogin?: SortOrder
     isActive?: SortOrder
     accountType?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     chats?: SortOrder
+    accountId?: SortOrder
     blocked?: SortOrder
     verified?: SortOrder
     _count?: PersonCountOrderByAggregateInput
@@ -5495,12 +5543,15 @@ export namespace Prisma {
     username?: StringWithAggregatesFilter<"Person"> | string
     email?: StringWithAggregatesFilter<"Person"> | string
     profilePicture?: StringNullableWithAggregatesFilter<"Person"> | string | null
+    passwordHash?: StringWithAggregatesFilter<"Person"> | string
     status?: EnumUserStatusWithAggregatesFilter<"Person"> | $Enums.UserStatus
     lastLogin?: DateTimeNullableWithAggregatesFilter<"Person"> | Date | string | null
     isActive?: BoolWithAggregatesFilter<"Person"> | boolean
     accountType?: EnumAccountTypeWithAggregatesFilter<"Person"> | $Enums.AccountType
     createdAt?: DateTimeWithAggregatesFilter<"Person"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Person"> | Date | string
     chats?: StringNullableListFilter<"Person">
+    accountId?: StringNullableWithAggregatesFilter<"Person"> | string | null
     blocked?: BoolWithAggregatesFilter<"Person"> | boolean
     verified?: BoolWithAggregatesFilter<"Person"> | boolean
   }
@@ -5693,12 +5744,15 @@ export namespace Prisma {
     username: string
     email: string
     profilePicture?: string | null
-    status?: $Enums.UserStatus
+    passwordHash: string
+    status: $Enums.UserStatus
     lastLogin?: Date | string | null
     isActive?: boolean
     accountType: $Enums.AccountType
     createdAt?: Date | string
+    updatedAt?: Date | string
     chats?: PersonCreatechatsInput | string[]
+    accountId?: string | null
     blocked?: boolean
     verified?: boolean
   }
@@ -5708,12 +5762,15 @@ export namespace Prisma {
     username: string
     email: string
     profilePicture?: string | null
-    status?: $Enums.UserStatus
+    passwordHash: string
+    status: $Enums.UserStatus
     lastLogin?: Date | string | null
     isActive?: boolean
     accountType: $Enums.AccountType
     createdAt?: Date | string
+    updatedAt?: Date | string
     chats?: PersonCreatechatsInput | string[]
+    accountId?: string | null
     blocked?: boolean
     verified?: boolean
   }
@@ -5722,12 +5779,15 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     profilePicture?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     accountType?: EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chats?: PersonUpdatechatsInput | string[]
+    accountId?: NullableStringFieldUpdateOperationsInput | string | null
     blocked?: BoolFieldUpdateOperationsInput | boolean
     verified?: BoolFieldUpdateOperationsInput | boolean
   }
@@ -5736,12 +5796,15 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     profilePicture?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     accountType?: EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chats?: PersonUpdatechatsInput | string[]
+    accountId?: NullableStringFieldUpdateOperationsInput | string | null
     blocked?: BoolFieldUpdateOperationsInput | boolean
     verified?: BoolFieldUpdateOperationsInput | boolean
   }
@@ -5751,12 +5814,15 @@ export namespace Prisma {
     username: string
     email: string
     profilePicture?: string | null
-    status?: $Enums.UserStatus
+    passwordHash: string
+    status: $Enums.UserStatus
     lastLogin?: Date | string | null
     isActive?: boolean
     accountType: $Enums.AccountType
     createdAt?: Date | string
+    updatedAt?: Date | string
     chats?: PersonCreatechatsInput | string[]
+    accountId?: string | null
     blocked?: boolean
     verified?: boolean
   }
@@ -5765,12 +5831,15 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     profilePicture?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     accountType?: EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chats?: PersonUpdatechatsInput | string[]
+    accountId?: NullableStringFieldUpdateOperationsInput | string | null
     blocked?: BoolFieldUpdateOperationsInput | boolean
     verified?: BoolFieldUpdateOperationsInput | boolean
   }
@@ -5779,12 +5848,15 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     profilePicture?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     accountType?: EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chats?: PersonUpdatechatsInput | string[]
+    accountId?: NullableStringFieldUpdateOperationsInput | string | null
     blocked?: BoolFieldUpdateOperationsInput | boolean
     verified?: BoolFieldUpdateOperationsInput | boolean
   }
@@ -6058,12 +6130,15 @@ export namespace Prisma {
     username?: SortOrder
     email?: SortOrder
     profilePicture?: SortOrder
+    passwordHash?: SortOrder
     status?: SortOrder
     lastLogin?: SortOrder
     isActive?: SortOrder
     accountType?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     chats?: SortOrder
+    accountId?: SortOrder
     blocked?: SortOrder
     verified?: SortOrder
   }
@@ -6073,11 +6148,14 @@ export namespace Prisma {
     username?: SortOrder
     email?: SortOrder
     profilePicture?: SortOrder
+    passwordHash?: SortOrder
     status?: SortOrder
     lastLogin?: SortOrder
     isActive?: SortOrder
     accountType?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
+    accountId?: SortOrder
     blocked?: SortOrder
     verified?: SortOrder
   }
@@ -6087,11 +6165,14 @@ export namespace Prisma {
     username?: SortOrder
     email?: SortOrder
     profilePicture?: SortOrder
+    passwordHash?: SortOrder
     status?: SortOrder
     lastLogin?: SortOrder
     isActive?: SortOrder
     accountType?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
+    accountId?: SortOrder
     blocked?: SortOrder
     verified?: SortOrder
   }

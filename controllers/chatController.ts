@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { PrismaClient as HorizonClient } from "../prisma/generated/horizon/index.js";
+import { PrismaClient as HorizonClient } from '@prisma/client'
 import { z } from "zod";
 
 const horizon = new HorizonClient();

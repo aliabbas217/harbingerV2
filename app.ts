@@ -12,11 +12,25 @@ import messageRouter from "./routes/v2/messageRouter.js";
 
 const app = express();
 export const httpServer = http.createServer(app);
-const io = new Server(httpServer);
+
+const io = new Server(httpServer, {
+  cors: {
+    origin: "http://localhost:3000", // Your frontend URL
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true
+  }
+});
 
 app.use(express.json());
+// Configure CORS with specific options
+app.use(cors({
+  origin: '*', // Allow all origins - you might want to restrict this in production
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
 app.use(express.static("public"));
-app.use(cors());
 
 const apiV2 = "/harbinger/api/v2";
 app.use(`${apiV2}/chat`, chatRouter);

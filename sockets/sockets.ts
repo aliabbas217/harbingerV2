@@ -2,7 +2,7 @@ import {
   PrismaClient as HorizonClient,
   MediaType,
   MessageStatus,
-} from "../prisma/generated/horizon/index.js";
+} from '@prisma/client';
 import { Server, Socket } from "socket.io";
 
 const horizon = new HorizonClient();

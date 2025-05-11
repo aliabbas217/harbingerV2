@@ -42,28 +42,31 @@ model Person {
   username       String      @unique
   email          String      @unique
   profilePicture String?
-  status         UserStatus  @default(ACTIVE)
+  passwordHash   String
+  status         UserStatus
   lastLogin      DateTime?
   isActive       Boolean     @default(false)
   accountType    AccountType
   createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
   chats          String[]    @db.ObjectId
+  accountId      String?     @db.ObjectId
   blocked        Boolean     @default(false)
   verified       Boolean     @default(false)
 }
 
 model Chat {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  participants String[]
+  participants String[] @db.ObjectId
   topics       Topic[]  @relation("ChatTopics")
-  visibleTo    String[]
+  visibleTo    String[] @db.ObjectId
 }
 
 model Topic {
   id          String    @id @default(auto()) @map("_id") @db.ObjectId
   topicName   String    @default("General")
-  createdBy   String
-  visibleTo   String[]
+  createdBy   String    @db.ObjectId
+  visibleTo   String[]  @db.ObjectId
   dateCreated DateTime  @default(now())
   messages    Message[] @relation("TopicMessages")
   chatId      String    @db.ObjectId
@@ -72,7 +75,7 @@ model Topic {
 
 model Message {
   id        String        @id @default(auto()) @map("_id") @db.ObjectId
-  sender    String
+  sender    String        @db.ObjectId
   text      String?
   mediaUrl  String?
   mediaType MediaType?
@@ -80,5 +83,5 @@ model Message {
   timestamp DateTime      @default(now())
   topicId   String        @db.ObjectId
   topic     Topic         @relation("TopicMessages", fields: [topicId], references: [id], onDelete: Cascade)
-  visibleTo String[]
+  visibleTo String[]      @db.ObjectId
 }

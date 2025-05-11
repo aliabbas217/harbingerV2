@@ -3,7 +3,7 @@ import {
   PrismaClient as HorizonClient,
   MediaType,
   MessageStatus,
-} from "../prisma/generated/horizon/index.js";
+} from '@prisma/client'
 import { z } from "zod";
 
 const horizon = new HorizonClient();

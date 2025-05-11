@@ -115,12 +115,15 @@ exports.Prisma.PersonScalarFieldEnum = {
   username: 'username',
   email: 'email',
   profilePicture: 'profilePicture',
+  passwordHash: 'passwordHash',
   status: 'status',
   lastLogin: 'lastLogin',
   isActive: 'isActive',
   accountType: 'accountType',
   createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
   chats: 'chats',
+  accountId: 'accountId',
   blocked: 'blocked',
   verified: 'verified'
 };
